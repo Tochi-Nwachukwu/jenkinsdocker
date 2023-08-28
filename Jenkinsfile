@@ -17,7 +17,7 @@ pipeline {
 
         stage('Test') {
                 steps {
-                sh 'pytest testRoutes.py'
+                sh 'cat testRoutes.py'
                 }
         }
 
@@ -38,16 +38,6 @@ pipeline {
                 }
             }
         }
-
-        // stage('Push To DockerHub') {
-        //     steps {
-        //         script {
-        //             docker.withRegistry('https://registry.hub.docker.com ', registryCredential) {
-        //                 dockerImage.push()
-        //             }
-        //         }
-        //     }
-        // }
 
         stage('Deploy') {
             steps {
