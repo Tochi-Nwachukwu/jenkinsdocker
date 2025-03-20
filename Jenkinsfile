@@ -1,47 +1,34 @@
-def img
 pipeline {
-    environment {
-        registry = 'tochinwachukwu/pythonjenkins'
-        registryCredential = 'DOCKERHUB'
-        githubCredential = 'GITHUB'
-        dockerImage = ''
-    }
     agent any
+    environment {
+    }
+    // 1. I will get the source code from git
+    // 2. I will build the docker image using docker build command, here I have to make sure that the Dockerfile exists
+    // 3. I will run the docker image using docker run command on port 5000
     stages {
-        stage('Checkout') {
-                steps {
-                git branch: 'main',
-                url: 'https://github.com/Tochi-Nwachukwu/jenkinsdocker.git'
-                }
-        }
-
-        stage('Test') {
-                steps {
-                sh 'cat testRoutes.py'
-                }
-        }
-
-        stage('Clean Up') {
+        stage('Get Source Code') {
             steps {
-                sh returnStatus: true, script: 'docker stop $(docker ps -a | grep ${JOB_NAME} | awk \'{print $1}\')'
-                sh returnStatus: true, script: 'docker rmi $(docker images | grep ${registry} | awk \'{print $3}\') --force'
-                sh returnStatus: true, script: 'docker rm ${JOB_NAME}'
+                git branch : 'main',
+                url:'https://github.com/Tochi-Nwachukwu/jenkinsdocker.git'
             }
         }
 
-        stage('Build Image') {
+        stage('Build') {
             steps {
                 script {
-                    img = registry + ":${env.BUILD_ID}"
-                    println("${img}")
-                    dockerImage = docker.build("${img}")
+                    sh '''
+                    cd jenkinsdocker
+                    sudo docker build -t pythonapp .
+                    '''
                 }
             }
         }
 
-        stage('Deploy') {
+        stage('Run Container') {
             steps {
-                sh label: '', script: "docker run -d --name ${JOB_NAME} -p 5000:5000 ${img}"
+                script {
+                    sh 'sudo docker run -p 5000:5000 pythonapp'
+                }
             }
         }
     }
